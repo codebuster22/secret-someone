@@ -1,0 +1,97 @@
+pragma solidity 0.8.11;
+
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
+contract SecretSomeone is ERC721URIStorage, Ownable, Pausable {
+    using Counters for Counters.Counter;
+    uint256 public immutable COMPLIMENTARY_SOMEONES;
+    uint256 public constant DISCOUNTED_PERIOD = 10 days;
+    uint256 public constant DISCOUNTED_PRICE = 0.05 ether;
+    uint256 public constant PRICE = 0.1 ether;
+    uint256 public cap = 100_000;
+    uint256 public complimentaryPeriodEndedOn;
+    Counters.Counter public secrets;
+
+    constructor(uint256 _complimentary, uint256 _cap) ERC721("Secret Someone", "SSO") {
+        COMPLIMENTARY_SOMEONES = _complimentary;
+        cap = _cap;
+    }
+
+    event SecretSealed(
+        address indexed sender,
+        address indexed receiver,
+        uint256 senderTokenId,
+        uint256 receiverTokenId
+    );
+
+    function sendSecret(address _receiver, string memory _ipfsHash)
+        external
+        payable
+        whenNotPaused
+    {
+        require(secrets.current() / 2 < cap, "no more secrets!");
+        if (secrets.current() / 2 + 1 > COMPLIMENTARY_SOMEONES) {
+            if (
+                block.timestamp <=
+                complimentaryPeriodEndedOn + DISCOUNTED_PERIOD
+            ) {
+                require(
+                    msg.value == DISCOUNTED_PRICE,
+                    "Send exact discount price"
+                );
+            } else {
+                require(msg.value == PRICE, "Send exact secret price");
+            }
+        } else {
+            require(msg.value == 0, "Are you rich?");
+        }
+        require(_receiver != address(0), "Don't feel lonely");
+        // send to secret someone
+        secrets.increment();
+        _mint(_receiver, secrets.current());
+        _setTokenURI(secrets.current(), _ipfsHash);
+        // mint the secret to yourself too
+        secrets.increment();
+        _mint(msg.sender, secrets.current());
+        _setTokenURI(secrets.current(), _ipfsHash);
+        if (COMPLIMENTARY_SOMEONES <= secrets.current() / 2 && complimentaryPeriodEndedOn == 0) {
+            complimentaryPeriodEndedOn = block.timestamp;
+        }
+        emit SecretSealed(
+            msg.sender,
+            _receiver,
+            secrets.current(),
+            secrets.current() - 1
+        );
+    }
+
+    function withdraw() external onlyOwner {
+        Address.sendValue(payable(msg.sender), address(this).balance);
+    }
+
+    function togglePauseState() external onlyOwner {
+        if (paused()) {
+            _unpause();
+        } else {
+            _pause();
+        }
+    }
+
+    function _baseURI() internal view virtual override returns (string memory) {
+        return "ipfs://";
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override {
+        require(
+            from == address(0) || to == address(0),
+            "Passing secrets is bad manners"
+        );
+    }
+}
