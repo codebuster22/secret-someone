@@ -1,12 +1,11 @@
 const deployFunction = async ({ getSigners, deployments, ethers }) => {
     const { deploy } = deployments;
     const [deployer] = await ethers.getSigners();
-    const complimentarySomeones = ethers.BigNumber.from(100);
-    const cap = ethers.BigNumber.from(500);
+    const complimentarySomeones = ethers.BigNumber.from(1000);
   
     await deploy("SecretSomeone", {
       from: deployer.address,
-      args: [complimentarySomeones, cap],
+      args: [complimentarySomeones],
       log: true,
     });
   };

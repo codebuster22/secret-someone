@@ -24,7 +24,7 @@ contract SecretSomeone is ERC721URIStorage, Ownable, Pausable {
     uint256 public complimentaryPeriodEndedOn;
     Counters.Counter public secrets;
 
-    constructor(uint256 _complimentary) ERC721("Secret Someone", "SSO") {
+    constructor(uint256 _complimentary) ERC721("Secret Someone", "SECRET") {
         COMPLIMENTARY_SOMEONES = _complimentary;
     }
 

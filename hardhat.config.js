@@ -61,11 +61,13 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
       ...sharedNetworkConfig,
       url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
       saveDeployments: true,
+      gasPrice: 33000000000
     },
     rinkeby: {
       ...sharedNetworkConfig,
       url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
       saveDeployments: true,
+      gasPrice: 10000000000
     },
     matic: {
       ...sharedNetworkConfig,
