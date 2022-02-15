@@ -18,9 +18,8 @@ const deploy = async () => {
 describe("Contract: SecretSomeone", () => {
   let owner, receiver, sender, nonReceiver, nonSender, extras;
   const complimentarySomeones = ethers.BigNumber.from(10);
-  const cap = ethers.BigNumber.from(50);
-  const price = parseUnits("0.1", 18);
-  const discountedPrice = parseUnits("0.05", 18);
+  const price = parseUnits("0.027", 18);
+  const discountedPrice = parseUnits("0.014", 18);
   let secretFactory, secretInstance;
   let ipfsHash = "qjkbdjhvbdsjhygvytfvjkusdbou";
   context(">> Setup SecretSomeone to be able to send secrets", () => {
@@ -30,7 +29,7 @@ describe("Contract: SecretSomeone", () => {
       secretFactory = setup.secretFactory;
     });
     it("$ woohoo, start sending secrets", async () => {
-      secretInstance = await secretFactory.deploy(complimentarySomeones, cap);
+      secretInstance = await secretFactory.deploy(complimentarySomeones);
       expect(await secretInstance.owner()).to.equal(owner.address);
     });
   });
@@ -137,25 +136,6 @@ describe("Contract: SecretSomeone", () => {
           .connect(sender)
           .sendSecret(receiver.address, ipfsHash, { value: price })
       ).to.emit(secretInstance, "SecretSealed");
-    });
-  });
-  context(">> when I'm late and cap is reached", async () => {
-    before("!! send all secrets", async () => {
-      const totalMinted = await secretInstance.secrets();
-      const remaining = cap.sub(totalMinted.div(2));
-      for (let i = ethers.BigNumber.from(0); i.lt(remaining); i = i.add(1)) {
-        await secretInstance.sendSecret(receiver.address, ipfsHash, {
-          value: price,
-        });
-      }
-      expect((await secretInstance.secrets()).div(2).eq(cap)).to.be.true;
-    });
-    it("$ reverts when there's no space for secrets", async () => {
-      await expect(
-        secretInstance
-          .connect(sender)
-          .sendSecret(receiver.address, ipfsHash, { value: price })
-      ).to.be.revertedWith("no more secrets!");
     });
   });
   context(">> owner can withdraw", () => {

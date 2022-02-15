@@ -19,15 +19,13 @@ contract SecretSomeone is ERC721URIStorage, Ownable, Pausable {
     using Counters for Counters.Counter;
     uint256 public immutable COMPLIMENTARY_SOMEONES;
     uint256 public constant DISCOUNTED_PERIOD = 10 days;
-    uint256 public constant DISCOUNTED_PRICE = 0.05 ether;
-    uint256 public constant PRICE = 0.1 ether;
-    uint256 public cap = 100_000;
+    uint256 public constant DISCOUNTED_PRICE = 0.014 ether;
+    uint256 public constant PRICE = 0.027 ether;
     uint256 public complimentaryPeriodEndedOn;
     Counters.Counter public secrets;
 
-    constructor(uint256 _complimentary, uint256 _cap) ERC721("Secret Someone", "SSO") {
+    constructor(uint256 _complimentary) ERC721("Secret Someone", "SSO") {
         COMPLIMENTARY_SOMEONES = _complimentary;
-        cap = _cap;
     }
 
     event SecretSealed(
@@ -42,7 +40,6 @@ contract SecretSomeone is ERC721URIStorage, Ownable, Pausable {
         payable
         whenNotPaused
     {
-        require(secrets.current() / 2 < cap, "no more secrets!");
         if (secrets.current() / 2 + 1 > COMPLIMENTARY_SOMEONES) {
             if (
                 block.timestamp <=

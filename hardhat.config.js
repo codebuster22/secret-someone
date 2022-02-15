@@ -87,7 +87,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 99999999,
+            runs: 200,
           },
         },
       },
